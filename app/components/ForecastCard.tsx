@@ -50,7 +50,7 @@ export default function ForecastCard({
         <p>{weatherText}</p>
       </div>
       <p className="w-1/3 pl-20">
-        {Math.floor(maxTemp)}/{Math.floor(minTemp)}
+        {Math.floor(maxTemp)} / {Math.floor(minTemp)}
       </p>
     </div>
   );

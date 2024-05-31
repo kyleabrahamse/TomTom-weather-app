@@ -3,6 +3,7 @@ import Image from "next/image";
 type CurrentProps = {
   name: string;
   image: string;
+  description: string;
   temp: number;
   humid: number;
   wind: number;
@@ -19,6 +20,7 @@ export default function CurrentWeatherCard({
   wind,
   visibility,
   feelsLike,
+  description,
 }: CurrentProps) {
   return (
     <div>
@@ -26,6 +28,7 @@ export default function CurrentWeatherCard({
         <div className="flex p-14">
           <div className="flex flex-col">
             <h1 className="text-4xl font-bold">{name}</h1>
+            <p className="text-gray-400 pt-4 text-xl">{description}</p>
             <p className="text-6xl font-bold mt-auto">{Math.floor(temp)} °C</p>
           </div>
           <Image
@@ -63,7 +66,7 @@ export default function CurrentWeatherCard({
               <>
                 <p>Visibility</p>
                 <p className="text-4xl font-bold text-white pt-2 pb-10">
-                  {visibility} m
+                  {visibility / 1000} km
                 </p>
               </>
             </div>

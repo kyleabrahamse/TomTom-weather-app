@@ -13,7 +13,6 @@ import {
 export default function Home() {
   const [currentWeather, setCurrentWeather] = useState<any>(null);
   const [forecast, setForecast] = useState<any>(null);
-  // const [forecastHour, setForecastHour] = useState<any>(null);
   const [location, setLocation] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
@@ -134,6 +133,7 @@ export default function Home() {
                 <CurrentWeatherCard
                   name={currentWeather.name}
                   image={`http://openweathermap.org/img/wn/${currentWeather.weather[0].icon}@2x.png`}
+                  description={currentWeather.weather[0].description}
                   temp={currentWeather.main.temp}
                   humid={currentWeather.main.humidity}
                   wind={currentWeather.wind.speed}
@@ -156,14 +156,14 @@ export default function Home() {
               </div>
             ) : null}
           </div>
-          <div className="flex w-1/3 flex-col gap-5 bg-slate-800 text-xl rounded-2xl p-2">
+          <div className="flex w-1/3 flex-col justify-between bg-slate-800 text-xl rounded-2xl px-2 py-10">
             {forecast
               ? forecast.daily.map((day: any, i: number) => {
                   return (
                     <ForecastCard
                       minTemp={day.temp.min}
                       maxTemp={day.temp.max}
-                      weatherText={day.weather[0].main}
+                      weatherText={day.weather[0].description}
                       unix={day.dt}
                       key={i}
                       image={`http://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
