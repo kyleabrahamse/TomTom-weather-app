@@ -8,6 +8,7 @@ type CurrentProps = {
   wind: number;
   visibility: number;
   feelsLike: number;
+  location?: string;
 };
 
 export default function CurrentWeatherCard({

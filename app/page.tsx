@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import CurrentWeatherCard from "./components/CurrentWeatherCard";
 import ForecastCard from "./components/ForecastCard";
+import {
+  homePageWeather,
+  cityWeatherFetch,
+  forecastWeatherFetch,
+} from "./Data/FetchWeather";
 
 export default function Home() {
   const [currentWeather, setCurrentWeather] = useState<any>(null);
@@ -11,19 +16,18 @@ export default function Home() {
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
 
-  const CurrentApiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${process.env.NEXT_PUBLIC_API_KEY}`;
-  const forecastApiUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&units=metric&exclude=hourly,minutely&appid=${process.env.NEXT_PUBLIC_API_KEY}`;
-
-  // fetch current weather for base route
   useEffect(() => {
-    const data = fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=london&units=metric&appid=${process.env.NEXT_PUBLIC_API_KEY}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
+    const fetchData = async () => {
+      try {
+        const data = await homePageWeather();
         setCurrentWeather(data);
-      });
+        // console.log(data);
+      } catch (err) {
+        console.log(err);
+        throw err;
+      }
+    };
+    fetchData();
   }, []);
 
   const handleChange = (event: any) => {
@@ -38,35 +42,37 @@ export default function Home() {
 
   const handleClick = () => {
     if (latitude && longitude) {
-      foreCastFetch();
+      foreCastFetch(parseFloat(latitude), parseFloat(longitude));
+      setCurrentWeather(null);
       setLatitude("");
       setLongitude("");
     } else if (location) {
-      currentWeatherFetch();
+      currentWeatherFetch(location);
+      setForecast(null);
       setLocation("");
     }
   };
 
-  const currentWeatherFetch = () => {
-    const data = fetch(CurrentApiUrl)
-      .then((res) => res.json())
-      .then((data) => {
-        setCurrentWeather(data);
-        setForecast(null);
-        console.log(currentWeather);
-      })
-      .catch((err) => console.log(err));
+  const currentWeatherFetch = async (location: any) => {
+    try {
+      const data = await cityWeatherFetch({ location });
+      setCurrentWeather(data);
+      console.log(data);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   };
 
-  const foreCastFetch = () => {
-    const data = fetch(forecastApiUrl)
-      .then((res) => res.json())
-      .then((data) => {
-        setForecast(data);
-        setCurrentWeather(null);
-        console.log(forecast);
-      })
-      .catch((err) => console.log(err));
+  const foreCastFetch = async (latitude: number, longitude: number) => {
+    try {
+      const data = await forecastWeatherFetch({ latitude, longitude });
+      setForecast(data);
+      console.log(data);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   };
 
   return (
@@ -105,6 +111,7 @@ export default function Home() {
           wind={currentWeather.wind.speed}
           visibility={currentWeather.visibility}
           feelsLike={currentWeather.main.feels_like}
+          location={location}
         />
       ) : null}
       <div className="flex gap-10">
