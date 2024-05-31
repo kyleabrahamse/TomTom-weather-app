@@ -43,13 +43,13 @@ export default function ForecastCard({
   }
 
   return (
-    <div className="flex items-center justify-around">
-      <h2 className="">{day}</h2>
-      <div className="flex items-center content-center ">
+    <div className="flex items-center">
+      <h2 className="w-1/3 pl-10 text-gray-400">{day}</h2>
+      <div className="flex w-1/3 items-center content-center ">
         <Image src={image} alt="weather" height={100} width={100} />
         <p>{weatherText}</p>
       </div>
-      <p className="">
+      <p className="w-1/3 pl-20">
         {Math.floor(maxTemp)}/{Math.floor(minTemp)}
       </p>
     </div>

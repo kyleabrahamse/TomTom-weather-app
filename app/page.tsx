@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import CurrentWeatherCard from "./components/CurrentWeatherCard";
 import ForecastCard from "./components/ForecastCard";
+import HourlyForecast from "./components/HourlyForecast";
 import {
   homePageWeather,
   cityWeatherFetch,
@@ -37,7 +38,6 @@ export default function Home() {
     };
     fetchData();
   }, []);
-  console.log(forecast)
 
   // onchange for inputs
   const handleChange = (event: any) => {
@@ -67,8 +67,15 @@ export default function Home() {
   // Fetch weather for current city
   const currentWeatherFetch = async (location: any) => {
     try {
-      const data = await cityWeatherFetch({ location });
-      setCurrentWeather(data);
+      const cityData = await cityWeatherFetch({ location });
+      setCurrentWeather(cityData);
+      if (cityData.coord) {
+        const forecastData = await forecastWeatherFetch({
+          latitude: cityData.coord.lat,
+          longitude: cityData.coord.lon,
+        });
+        setForecast(forecastData);
+      }
     } catch (err) {
       console.log(err);
       throw err;
@@ -85,9 +92,10 @@ export default function Home() {
       throw err;
     }
   };
+  console.log(forecast);
 
   return (
-    <main className="bg-slate-900 text-white py-20">
+    <main className="bg-slate-900 text-white py-20 h-screen">
       <div className="w-8/12 mx-auto">
         <div className="flex gap-2 pb-10">
           <input
@@ -114,27 +122,41 @@ export default function Home() {
           />
           <button
             onClick={handleClick}
-            className="bg-slate-700 text-xl rounded-xl p-2 hover:bg-slate-700 hover:border-none ml-4"
+            className="bg-blue-600 text-xl rounded-xl p-2 hover:bg-blue-800 ml-4"
           >
             Search
           </button>
         </div>
-        <div className="flex gap-10 border">
+        <div className="flex gap-10 ">
           <div className="w-2/3">
-            {currentWeather ? (
-              <CurrentWeatherCard
-                name={currentWeather.name}
-                image={`http://openweathermap.org/img/wn/${currentWeather.weather[0].icon}@2x.png`}
-                temp={currentWeather.main.temp}
-                humid={currentWeather.main.humidity}
-                wind={currentWeather.wind.speed}
-                visibility={currentWeather.visibility}
-                feelsLike={currentWeather.main.feels_like}
-                location={location}
-              />
+            {currentWeather && forecast ? (
+              <div>
+                <CurrentWeatherCard
+                  name={currentWeather.name}
+                  image={`http://openweathermap.org/img/wn/${currentWeather.weather[0].icon}@2x.png`}
+                  temp={currentWeather.main.temp}
+                  humid={currentWeather.main.humidity}
+                  wind={currentWeather.wind.speed}
+                  visibility={currentWeather.visibility}
+                  feelsLike={currentWeather.main.feels_like}
+                  location={location}
+                />
+                <div className="flex flex-wrap justify-around mt-4 rounded-2xl bg-slate-800 p-10">
+                  {forecast.hourly
+                    .slice(0, 6)
+                    .map((hour: any, index: number) => (
+                      <HourlyForecast
+                        key={index}
+                        temp={hour.temp}
+                        icon={hour.weather[0].icon}
+                        unix={hour.dt}
+                      />
+                    ))}
+                </div>
+              </div>
             ) : null}
           </div>
-          <div className="flex w-1/3 flex-col gap-5 bg-slate-800 text-xl rounded-xl p-2">
+          <div className="flex w-1/3 flex-col gap-5 bg-slate-800 text-xl rounded-2xl p-2">
             {forecast
               ? forecast.daily.map((day: any, i: number) => {
                   return (

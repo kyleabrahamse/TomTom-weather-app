@@ -36,7 +36,7 @@ export default function CurrentWeatherCard({
             width={200}
           />
         </div>
-        <div className="bg-slate-800 text-xl p-10 rounded-xl text-gray-400">
+        <div className="bg-slate-800 text-xl p-10 rounded-2xl text-gray-400">
           <p className="pb-5">Air conditions</p>
           <div className="flex gap-96">
             <div>
