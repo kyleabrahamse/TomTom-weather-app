@@ -12,16 +12,24 @@ import {
 export default function Home() {
   const [currentWeather, setCurrentWeather] = useState<any>(null);
   const [forecast, setForecast] = useState<any>(null);
+  // const [forecastHour, setForecastHour] = useState<any>(null);
   const [location, setLocation] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
 
+  // Weather data for home page
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await homePageWeather();
-        setCurrentWeather(data);
-        // console.log(data);
+        const homeData = await homePageWeather();
+        setCurrentWeather(homeData);
+        if (homeData.coord) {
+          const forecastData = await forecastWeatherFetch({
+            latitude: homeData.coord.lat,
+            longitude: homeData.coord.lon,
+          });
+          setForecast(forecastData);
+        }
       } catch (err) {
         console.log(err);
         throw err;
@@ -29,7 +37,9 @@ export default function Home() {
     };
     fetchData();
   }, []);
+  console.log(forecast)
 
+  // onchange for inputs
   const handleChange = (event: any) => {
     setLocation(event.target.value);
   };
@@ -40,6 +50,7 @@ export default function Home() {
     setLongitude(event.target.value);
   };
 
+  // fucntion handler for search button
   const handleClick = () => {
     if (latitude && longitude) {
       foreCastFetch(parseFloat(latitude), parseFloat(longitude));
@@ -53,22 +64,22 @@ export default function Home() {
     }
   };
 
+  // Fetch weather for current city
   const currentWeatherFetch = async (location: any) => {
     try {
       const data = await cityWeatherFetch({ location });
       setCurrentWeather(data);
-      console.log(data);
     } catch (err) {
       console.log(err);
       throw err;
     }
   };
 
+  // fetch weather for forecast by lat and long
   const foreCastFetch = async (latitude: number, longitude: number) => {
     try {
       const data = await forecastWeatherFetch({ latitude, longitude });
       setForecast(data);
-      console.log(data);
     } catch (err) {
       console.log(err);
       throw err;
@@ -76,57 +87,70 @@ export default function Home() {
   };
 
   return (
-    <main>
-      <input
-        className="border-2 border-black text-4xl"
-        type="text"
-        onChange={handleChange}
-        value={location}
-      />
-      <div>
-        <input
-          placeholder="latitude"
-          type="text"
-          className="border-2 border-black text-4xl"
-          onChange={latChange}
-          value={latitude}
-        />
-        <input
-          placeholder="longitude"
-          type="text"
-          className="border-2 border-black text-4xl"
-          onChange={longChange}
-          value={longitude}
-        />
-      </div>
-      <button onClick={handleClick} className="border-2 border-black text-4xl">
-        Search
-      </button>
-      {currentWeather ? (
-        <CurrentWeatherCard
-          name={currentWeather.name}
-          image={`http://openweathermap.org/img/wn/${currentWeather.weather[0].icon}.png`}
-          temp={currentWeather.main.temp}
-          humid={currentWeather.main.humidity}
-          wind={currentWeather.wind.speed}
-          visibility={currentWeather.visibility}
-          feelsLike={currentWeather.main.feels_like}
-          location={location}
-        />
-      ) : null}
-      <div className="flex gap-10">
-        {forecast
-          ? forecast.daily.map((day: any, i: number) => {
-              return (
-                <ForecastCard
-                  minTemp={day.temp.min}
-                  maxTemp={day.temp.max}
-                  unix={day.dt}
-                  key={i}
-                />
-              );
-            })
-          : null}
+    <main className="bg-slate-900 text-white py-20">
+      <div className="w-8/12 mx-auto">
+        <div className="flex gap-2 pb-10">
+          <input
+            className="bg-slate-800 text-xl rounded-xl p-2"
+            type="text"
+            onChange={handleChange}
+            value={location}
+            placeholder="Search by city"
+          />
+          <p className="my-auto px-2">or</p>
+          <input
+            placeholder="latitude"
+            type="text"
+            className="bg-slate-800 text-xl rounded-xl p-2"
+            onChange={latChange}
+            value={latitude}
+          />
+          <input
+            placeholder="longitude"
+            type="text"
+            className="bg-slate-800 text-xl rounded-xl p-2"
+            onChange={longChange}
+            value={longitude}
+          />
+          <button
+            onClick={handleClick}
+            className="bg-slate-700 text-xl rounded-xl p-2 hover:bg-slate-700 hover:border-none ml-4"
+          >
+            Search
+          </button>
+        </div>
+        <div className="flex gap-10 border">
+          <div className="w-2/3">
+            {currentWeather ? (
+              <CurrentWeatherCard
+                name={currentWeather.name}
+                image={`http://openweathermap.org/img/wn/${currentWeather.weather[0].icon}@2x.png`}
+                temp={currentWeather.main.temp}
+                humid={currentWeather.main.humidity}
+                wind={currentWeather.wind.speed}
+                visibility={currentWeather.visibility}
+                feelsLike={currentWeather.main.feels_like}
+                location={location}
+              />
+            ) : null}
+          </div>
+          <div className="flex w-1/3 flex-col gap-5 bg-slate-800 text-xl rounded-xl p-2">
+            {forecast
+              ? forecast.daily.map((day: any, i: number) => {
+                  return (
+                    <ForecastCard
+                      minTemp={day.temp.min}
+                      maxTemp={day.temp.max}
+                      weatherText={day.weather[0].main}
+                      unix={day.dt}
+                      key={i}
+                      image={`http://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
+                    />
+                  );
+                })
+              : null}
+          </div>
+        </div>
       </div>
     </main>
   );
