@@ -5,33 +5,33 @@ import CurrentWeatherCard from "./components/CurrentWeatherCard";
 import ForecastCard from "./components/ForecastCard";
 
 export default function Home() {
-  const [weather, setWeather] = useState<any>(null);
+  const [currentWeather, setCurrentWeather] = useState<any>(null);
   const [forecast, setForecast] = useState<any>(null);
-  const [location, setLocation] = useState("london");
+  const [location, setLocation] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
 
-  const apiKey = "c815e7e6f6adf63781437395939c7e9d";
-  const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${apiKey}`;
-  const forecastApiUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&units=metric&exclude=hourly,minutely&appid=${apiKey}`;
+  const CurrentApiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${process.env.NEXT_PUBLIC_API_KEY}`;
+  const forecastApiUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&units=metric&exclude=hourly,minutely&appid=${process.env.NEXT_PUBLIC_API_KEY}`;
 
+  // fetch current weather for base route
   useEffect(() => {
-    const data = fetch(apiUrl)
+    const data = fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=london&units=metric&appid=${process.env.NEXT_PUBLIC_API_KEY}`
+    )
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
-        setWeather(data);
+        setCurrentWeather(data);
       });
   }, []);
 
   const handleChange = (event: any) => {
     setLocation(event.target.value);
   };
-
   const latChange = (event: any) => {
     setLatitude(event.target.value);
   };
-
   const longChange = (event: any) => {
     setLongitude(event.target.value);
   };
@@ -39,17 +39,21 @@ export default function Home() {
   const handleClick = () => {
     if (latitude && longitude) {
       foreCastFetch();
-    } else {
+      setLatitude("");
+      setLongitude("");
+    } else if (location) {
       currentWeatherFetch();
+      setLocation("");
     }
   };
 
   const currentWeatherFetch = () => {
-    const data = fetch(apiUrl)
+    const data = fetch(CurrentApiUrl)
       .then((res) => res.json())
       .then((data) => {
-        setWeather(data);
-        console.log(weather);
+        setCurrentWeather(data);
+        setForecast(null);
+        console.log(currentWeather);
       })
       .catch((err) => console.log(err));
   };
@@ -59,18 +63,19 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         setForecast(data);
+        setCurrentWeather(null);
         console.log(forecast);
       })
       .catch((err) => console.log(err));
   };
 
-  // console.log(weather);
   return (
     <main>
       <input
         className="border-2 border-black text-4xl"
         type="text"
         onChange={handleChange}
+        value={location}
       />
       <div>
         <input
@@ -78,40 +83,44 @@ export default function Home() {
           type="text"
           className="border-2 border-black text-4xl"
           onChange={latChange}
+          value={latitude}
         />
         <input
           placeholder="longitude"
           type="text"
           className="border-2 border-black text-4xl"
           onChange={longChange}
+          value={longitude}
         />
       </div>
       <button onClick={handleClick} className="border-2 border-black text-4xl">
         Search
       </button>
-      {/* {weather ? (
+      {currentWeather ? (
         <CurrentWeatherCard
-          name={weather.name}
-          image={`http://openweathermap.org/img/wn/${weather.weather[0].icon}.png`}
-          temp={weather.main.temp}
-          humid={weather.main.humidity}
-          wind={weather.wind.speed}
-          visibility={weather.visibility}
-          feelsLike={weather.main.feels_like}
+          name={currentWeather.name}
+          image={`http://openweathermap.org/img/wn/${currentWeather.weather[0].icon}.png`}
+          temp={currentWeather.main.temp}
+          humid={currentWeather.main.humidity}
+          wind={currentWeather.wind.speed}
+          visibility={currentWeather.visibility}
+          feelsLike={currentWeather.main.feels_like}
         />
-      ) : null} */}
-      {forecast
-        ? forecast.daily.map((day:any, i:number) => {
-            return (
-              <ForecastCard
-                minTemp={day.temp.min}
-                maxTemp={day.temp.max}
-                unix={day.dt}
-                key={i}
-              />
-            );
-          })
-        : null}
+      ) : null}
+      <div className="flex gap-10">
+        {forecast
+          ? forecast.daily.map((day: any, i: number) => {
+              return (
+                <ForecastCard
+                  minTemp={day.temp.min}
+                  maxTemp={day.temp.max}
+                  unix={day.dt}
+                  key={i}
+                />
+              );
+            })
+          : null}
+      </div>
     </main>
   );
 }
