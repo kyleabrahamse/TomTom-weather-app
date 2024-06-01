@@ -16,6 +16,8 @@ export default function Home() {
   const [location, setLocation] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
+  const [searchedLocation, setSearchedLocation] = useState("");
+  const [bool, setBool] = useState(false);
 
   // Weather data for home page
   useEffect(() => {
@@ -56,10 +58,12 @@ export default function Home() {
       setCurrentWeather(null);
       setLatitude("");
       setLongitude("");
+      setBool(false);
     } else if (location) {
       currentWeatherFetch(location);
       setForecast(null);
       setLocation("");
+      setBool(false);
     }
   };
 
@@ -86,13 +90,16 @@ export default function Home() {
     try {
       const data = await forecastWeatherFetch({ latitude, longitude });
       setForecast(data);
+      setCurrentWeather(data.current);
+      setBool(true);
+      setSearchedLocation(`Lat: ${latitude}, Long: ${longitude}`);
     } catch (err) {
       console.log(err);
       throw err;
     }
   };
   console.log(forecast);
-
+  ("");
   return (
     <main className="bg-slate-900 text-white py-20 h-screen">
       <div className="w-8/12 mx-auto">
@@ -131,17 +138,27 @@ export default function Home() {
             {currentWeather && forecast ? (
               <div>
                 <CurrentWeatherCard
-                  name={currentWeather.name}
+                  name={bool ? searchedLocation : currentWeather.name}
                   image={`http://openweathermap.org/img/wn/${currentWeather.weather[0].icon}@2x.png`}
                   description={currentWeather.weather[0].description}
-                  temp={currentWeather.main.temp}
-                  humid={currentWeather.main.humidity}
-                  wind={currentWeather.wind.speed}
+                  temp={bool ? currentWeather.temp : currentWeather.main.temp}
+                  humid={
+                    bool
+                      ? currentWeather.humidity
+                      : currentWeather.main.humidity
+                  }
+                  wind={
+                    bool ? currentWeather.wind_speed : currentWeather.wind.speed
+                  }
                   visibility={currentWeather.visibility}
-                  feelsLike={currentWeather.main.feels_like}
+                  feelsLike={
+                    bool
+                      ? currentWeather.feels_like
+                      : currentWeather.main.feels_like
+                  }
                   location={location}
                 />
-                <div className="flex flex-wrap justify-around mt-4 rounded-2xl bg-slate-800 p-10">
+                <div className="flex flex-wrap justify-around mt-6 rounded-2xl bg-slate-800 p-10">
                   {forecast.hourly
                     .slice(0, 6)
                     .map((hour: any, index: number) => (
@@ -156,7 +173,7 @@ export default function Home() {
               </div>
             ) : null}
           </div>
-          <div className="flex w-1/3 flex-col justify-between bg-slate-800 text-xl rounded-2xl px-2 py-10">
+          <div className="flex w-1/3 flex-col justify-between bg-slate-800 text-xl rounded-2xl px-2 py-4">
             {forecast
               ? forecast.daily.map((day: any, i: number) => {
                   return (
