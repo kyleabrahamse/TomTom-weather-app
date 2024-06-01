@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import CurrentWeatherCard from "./components/CurrentWeatherCard";
 import ForecastCard from "./components/ForecastCard";
 import HourlyForecast from "./components/HourlyForecast";
@@ -22,6 +22,8 @@ export default function Home() {
   const [longitude, setLongitude] = useState("");
   const [searchedLocation, setSearchedLocation] = useState("");
   const [bool, setBool] = useState(false);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Add data to Firebase
   const colRef = collection(db, "weather-data");
@@ -66,7 +68,7 @@ export default function Home() {
   const longChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLongitude(event.target.value);
   };
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       handleClick();
     }
@@ -76,16 +78,16 @@ export default function Home() {
   const handleClick = () => {
     if (latitude && longitude) {
       foreCastFetch(parseFloat(latitude), parseFloat(longitude));
-      setCurrentWeather(null);
-      setLatitude("");
-      setLongitude("");
-      setBool(false);
     } else if (location) {
       currentWeatherFetch(location);
-      setForecast(null);
-      setLocation("");
-      setBool(false);
     }
+
+    setCurrentWeather(null);
+    setLatitude("");
+    setLongitude("");
+    setBool(false);
+    setForecast(null);
+    setLocation("");
   };
 
   // Fetch weather for current city
@@ -122,43 +124,56 @@ export default function Home() {
     }
   };
 
+  // Scroll handling
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
+    }
+  };
+
   return (
-    <main className="bg-slate-900 text-white py-20 h-screen">
-      <div className="w-8/12 mx-auto">
-        <div className="flex gap-2 pb-10">
+    <main className="bg-slate-900 text-white py-20">
+      <div className="w-11/12 lg:w-8/12 mx-auto">
+        <div className="lg:flex gap-2 pb-10">
           <input
-            className="bg-slate-800 text-xl rounded-xl p-2"
+            className="bg-slate-800 text-xl rounded-xl p-2 w-full"
             type="text"
             onChange={handleChange}
             value={location}
             placeholder="Search by city"
-            onKeyDown={handleKeyDown}
+            onKeyDown={handleKey}
           />
           <p className="my-auto px-2">or</p>
           <input
             placeholder="latitude"
             type="text"
-            className="bg-slate-800 text-xl rounded-xl p-2"
+            className="bg-slate-800 text-xl rounded-xl p-2 mb-4 lg:mb-0 w-full"
             onChange={latChange}
             value={latitude}
           />
           <input
             placeholder="longitude"
             type="text"
-            className="bg-slate-800 text-xl rounded-xl p-2"
+            className="bg-slate-800 text-xl rounded-xl p-2 w-full"
             onChange={longChange}
             value={longitude}
-            onKeyDown={handleKeyDown}
+            onKeyDown={handleKey}
           />
           <button
             onClick={handleClick}
-            className="bg-blue-600 text-xl rounded-xl p-2 hover:bg-blue-800 ml-4"
+            className="bg-blue-600 text-xl rounded-xl p-2 hover:bg-blue-800 mt-4 lg:mt-0 ml:0 lg:ml-4 w-full"
           >
             Search
           </button>
         </div>
-        <div className="flex gap-10 ">
-          <div className="w-2/3">
+        <div className="xl:flex gap-10">
+          <div className="xl:w-2/3 ">
             {currentWeather && forecast ? (
               <div>
                 <CurrentWeatherCard
@@ -182,22 +197,20 @@ export default function Home() {
                   }
                   location={location}
                 />
-                <div className="flex flex-wrap justify-around mt-6 rounded-2xl bg-slate-800 p-10">
-                  {forecast.hourly
-                    .slice(0, 6)
-                    .map((hour: any, index: number) => (
-                      <HourlyForecast
-                        key={index}
-                        temp={hour.temp}
-                        icon={hour.weather[0].icon}
-                        unix={hour.dt}
-                      />
-                    ))}
+                <div className="flex mt-6 gap-12 rounded-2xl bg-slate-800 p-10  overflow-x-scroll whitespace-nowrap">
+                  {forecast.hourly.map((hour: any, index: number) => (
+                    <HourlyForecast
+                      key={index}
+                      temp={hour.temp}
+                      icon={hour.weather[0].icon}
+                      unix={hour.dt}
+                    />
+                  ))}
                 </div>
               </div>
             ) : null}
           </div>
-          <div className="flex w-1/3 flex-col justify-between bg-slate-800 text-xl rounded-2xl px-2 py-4">
+          <div className="flex xl:w-1/3 mt-6 flex-col justify-between bg-slate-800 text-xl rounded-2xl px-2 py-4">
             {forecast
               ? forecast.daily.map((day: any, i: number) => {
                   return (

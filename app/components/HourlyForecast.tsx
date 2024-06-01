@@ -11,7 +11,7 @@ export default function HourlyForecast({ temp, icon, unix }: hourlyProps) {
   const hour = date.getHours();
 
   return (
-    <div className="text-center ">
+    <div className="flex flex-col justify-between text-center md:min-w-[120px]">
       <p className="text-gray-400 text-xl">{hour}:00</p>
       <Image
         src={`http://openweathermap.org/img/wn/${icon}@2x.png`}
