@@ -10,6 +10,10 @@ import {
   forecastWeatherFetch,
 } from "./Data/FetchWeather";
 
+// Firebase
+import { collection, addDoc } from "firebase/firestore";
+import db from "./Firebase/firebase-config";
+
 export default function Home() {
   const [currentWeather, setCurrentWeather] = useState<any>(null);
   const [forecast, setForecast] = useState<any>(null);
@@ -18,6 +22,18 @@ export default function Home() {
   const [longitude, setLongitude] = useState("");
   const [searchedLocation, setSearchedLocation] = useState("");
   const [bool, setBool] = useState(false);
+
+  // Add data to Firebase
+  const colRef = collection(db, "weather-data");
+
+  const addDocument = async (colRef: any, forecast: any) => {
+    try {
+      await addDoc(colRef, forecast);
+      console.log("Document added succesfully");
+    } catch (err) {
+      console.log("Error adding document: ", err);
+    }
+  };
 
   // Weather data for home page
   useEffect(() => {
@@ -41,14 +57,19 @@ export default function Home() {
   }, []);
 
   // onchange for inputs
-  const handleChange = (event: any) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLocation(event.target.value);
   };
-  const latChange = (event: any) => {
+  const latChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLatitude(event.target.value);
   };
-  const longChange = (event: any) => {
+  const longChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLongitude(event.target.value);
+  };
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      handleClick();
+    }
   };
 
   // fucntion handler for search button
@@ -78,6 +99,7 @@ export default function Home() {
           longitude: cityData.coord.lon,
         });
         setForecast(forecastData);
+        addDocument(colRef, cityData);
       }
     } catch (err) {
       console.log(err);
@@ -93,13 +115,13 @@ export default function Home() {
       setCurrentWeather(data.current);
       setBool(true);
       setSearchedLocation(`Lat: ${latitude}, Long: ${longitude}`);
+      addDocument(colRef, data);
     } catch (err) {
       console.log(err);
       throw err;
     }
   };
-  console.log(forecast);
-  ("");
+
   return (
     <main className="bg-slate-900 text-white py-20 h-screen">
       <div className="w-8/12 mx-auto">
@@ -110,6 +132,7 @@ export default function Home() {
             onChange={handleChange}
             value={location}
             placeholder="Search by city"
+            onKeyDown={handleKeyDown}
           />
           <p className="my-auto px-2">or</p>
           <input
@@ -125,6 +148,7 @@ export default function Home() {
             className="bg-slate-800 text-xl rounded-xl p-2"
             onChange={longChange}
             value={longitude}
+            onKeyDown={handleKeyDown}
           />
           <button
             onClick={handleClick}
