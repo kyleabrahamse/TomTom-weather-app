@@ -77,7 +77,6 @@ export default function Home() {
       .then((res) => res.json())
       .then((data: any) => {
         setCities(data);
-        console.log(cities);
       })
       .catch((err) => console.error(err));
   };
