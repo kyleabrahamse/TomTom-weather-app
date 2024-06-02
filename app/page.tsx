@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
+import SearchComponent from "./components/SearchComponent";
 import CurrentWeatherCard from "./components/CurrentWeatherCard";
 import ForecastCard from "./components/ForecastCard";
 import HourlyForecast from "./components/HourlyForecast";
@@ -22,8 +23,15 @@ export default function Home() {
   const [longitude, setLongitude] = useState("");
   const [searchedLocation, setSearchedLocation] = useState("");
   const [bool, setBool] = useState(false);
+  const [cities, setCities] = useState("");
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const options = {
+    method: "GET",
+    headers: {
+      "X-RapidAPI-Key": "b926f37c76msh9ed01bf9b1e8aa3p10f188jsn3f5041e0b37b",
+      "X-RapidAPI-Host": "wft-geo-db.p.rapidapi.com",
+    },
+  };
 
   // Add data to Firebase
   const colRef = collection(db, "weather-data");
@@ -31,9 +39,9 @@ export default function Home() {
   const addDocument = async (colRef: any, forecast: any) => {
     try {
       await addDoc(colRef, forecast);
-      console.log("Document added succesfully");
+      console.log("Document added succesfully, Am I hired?");
     } catch (err) {
-      console.log("Error adding document: ", err);
+      console.log("Error adding document", err);
     }
   };
 
@@ -59,8 +67,19 @@ export default function Home() {
   }, []);
 
   // onchange for inputs
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const locationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLocation(event.target.value);
+
+    // Fetch city suggestions
+    const city = event.target.value;
+    const url = `https://wft-geo-db.p.rapidapi.com/v1/geo/cities?&namePrefix=${city}`;
+    fetch(url, options)
+      .then((res) => res.json())
+      .then((data: any) => {
+        setCities(data);
+        console.log(cities);
+      })
+      .catch((err) => console.error(err));
   };
   const latChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLatitude(event.target.value);
@@ -70,12 +89,12 @@ export default function Home() {
   };
   const handleKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
-      handleClick();
+      handleSearch();
     }
   };
 
-  // fucntion handler for search button
-  const handleClick = () => {
+  // function handler for search button
+  const handleSearch = () => {
     if (latitude && longitude) {
       foreCastFetch(parseFloat(latitude), parseFloat(longitude));
     } else if (location) {
@@ -123,55 +142,22 @@ export default function Home() {
       throw err;
     }
   };
-
-  // Scroll handling
-  const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
-    }
-  };
-
-  const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
-    }
-  };
+  console.log();
 
   return (
     <main className="bg-slate-900 text-white py-20">
       <div className="w-11/12 lg:w-8/12 mx-auto">
-        <div className="lg:flex gap-2 pb-10">
-          <input
-            className="bg-slate-800 text-xl rounded-xl p-2 w-full"
-            type="text"
-            onChange={handleChange}
-            value={location}
-            placeholder="Search by city"
-            onKeyDown={handleKey}
-          />
-          <p className="my-auto px-2">or</p>
-          <input
-            placeholder="latitude"
-            type="text"
-            className="bg-slate-800 text-xl rounded-xl p-2 mb-4 lg:mb-0 w-full"
-            onChange={latChange}
-            value={latitude}
-          />
-          <input
-            placeholder="longitude"
-            type="text"
-            className="bg-slate-800 text-xl rounded-xl p-2 w-full"
-            onChange={longChange}
-            value={longitude}
-            onKeyDown={handleKey}
-          />
-          <button
-            onClick={handleClick}
-            className="bg-blue-600 text-xl rounded-xl p-2 hover:bg-blue-800 mt-4 lg:mt-0 ml:0 lg:ml-4 w-full"
-          >
-            Search
-          </button>
-        </div>
+        <SearchComponent
+          location={location}
+          longitude={longitude}
+          latitude={latitude}
+          handleSearch={handleSearch}
+          locationChange={locationChange}
+          latChange={latChange}
+          longChange={longChange}
+          handleKey={handleKey}
+          cities={cities}
+        />
         <div className="xl:flex gap-10">
           <div className="xl:w-2/3 ">
             {currentWeather && forecast ? (
