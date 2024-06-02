@@ -25,14 +25,6 @@ export default function Home() {
   const [bool, setBool] = useState(false);
   const [cities, setCities] = useState("");
 
-  const options = {
-    method: "GET",
-    headers: {
-      "X-RapidAPI-Key": "b926f37c76msh9ed01bf9b1e8aa3p10f188jsn3f5041e0b37b",
-      "X-RapidAPI-Host": "wft-geo-db.p.rapidapi.com",
-    },
-  };
-
   // Add data to Firebase
   const colRef = collection(db, "weather-data");
 
@@ -65,6 +57,15 @@ export default function Home() {
     };
     fetchData();
   }, []);
+
+  // city suggestions apiKey
+  const options = {
+    method: "GET",
+    headers: {
+      "X-RapidAPI-Key": "b926f37c76msh9ed01bf9b1e8aa3p10f188jsn3f5041e0b37b",
+      "X-RapidAPI-Host": "wft-geo-db.p.rapidapi.com",
+    },
+  };
 
   // onchange for inputs
   const locationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,16 +101,16 @@ export default function Home() {
       currentWeatherFetch(location);
     }
 
-    setCurrentWeather(null);
     setLatitude("");
     setLongitude("");
-    setBool(false);
-    setForecast(null);
     setLocation("");
+    setCurrentWeather(null);
+    setForecast(null);
+    setBool(false);
   };
 
   // Fetch weather for current city
-  const currentWeatherFetch = async (location: any) => {
+  const currentWeatherFetch = async (location: string) => {
     try {
       const cityData = await cityWeatherFetch({ location });
       setCurrentWeather(cityData);
@@ -127,7 +128,7 @@ export default function Home() {
     }
   };
 
-  // fetch weather for forecast by lat and long
+  // fetch weather for forecast
   const foreCastFetch = async (latitude: number, longitude: number) => {
     try {
       const data = await forecastWeatherFetch({ latitude, longitude });
