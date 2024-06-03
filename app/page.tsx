@@ -22,8 +22,8 @@ export default function Home() {
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [searchedLocation, setSearchedLocation] = useState("");
-  const [bool, setBool] = useState(false);
   const [cities, setCities] = useState("");
+  const [bool, setBool] = useState(false);
 
   // Add data to Firebase
   const colRef = collection(db, "weather-data");
@@ -194,7 +194,9 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <p>No data for that location, try another city.</p>
+            )}
           </div>
           <div className="flex xl:w-1/3 mt-6 flex-col justify-between bg-slate-800 text-xl rounded-2xl px-2 py-4">
             {forecast
