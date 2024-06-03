@@ -142,7 +142,6 @@ export default function Home() {
       throw err;
     }
   };
-  console.log();
 
   return (
     <main className="bg-slate-900 text-white py-20">
